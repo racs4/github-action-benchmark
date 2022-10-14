@@ -53,6 +53,7 @@ function getCommitFromPullRequestPayload(pr) {
         timestamp: pr.head.repo.updated_at,
         url: `${pr.html_url}/commits/${id}`,
         parent: undefined,
+        original_ref: pr.head.label,
     };
 }
 async function getCommitFromGitHubAPIRequest(githubToken) {
@@ -68,6 +69,10 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
     console.log('data commit', data);
     const { commit } = data;
     const parentCommit = data.parents[data.parents.length - 1];
+    let ref = undefined;
+    if (github.context.payload.ref) {
+        ref = github.context.payload.ref.split('/').slice(-1).pop(); // gets last
+    }
     return {
         author: {
             name: commit.author.name,
@@ -84,6 +89,7 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
         timestamp: commit.author.date,
         url: data.html_url,
         parent: parentCommit === null || parentCommit === void 0 ? void 0 : parentCommit.sha,
+        original_ref: ref,
     };
 }
 async function getCommit(githubToken) {

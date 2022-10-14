@@ -31,6 +31,7 @@ exports.SCRIPT_PREFIX = 'window.BENCHMARK_DATA = ';
 const DEFAULT_DATA_JSON = {
     lastUpdate: 0,
     repoUrl: '',
+    branches: {},
     entries: {},
 };
 async function loadDataJs(dataPath) {
@@ -280,6 +281,9 @@ function addBenchmarkToDataJson(benchName, bench, data, maxItems) {
     let prevBench = null;
     data.lastUpdate = Date.now();
     data.repoUrl = htmlUrl;
+    if (bench.commit.original_ref) {
+        data.branches[bench.commit.original_ref] = bench.commit.id;
+    }
     // Add benchmark result
     if (data.entries[benchName] === undefined) {
         data.entries[benchName] = { [bench.commit.id]: bench };
