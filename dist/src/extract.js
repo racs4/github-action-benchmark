@@ -52,6 +52,7 @@ function getCommitFromPullRequestPayload(pr) {
         message: pr.title,
         timestamp: pr.head.repo.updated_at,
         url: `${pr.html_url}/commits/${id}`,
+        parent: undefined,
     };
 }
 async function getCommitFromGitHubAPIRequest(githubToken) {
@@ -65,6 +66,7 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
         throw new Error(`Could not fetch the head commit. Received code: ${status}`);
     }
     const { commit } = data;
+    const parentCommit = data.parents[0];
     return {
         author: {
             name: commit.author.name,
@@ -80,6 +82,7 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
         message: commit.message,
         timestamp: commit.author.date,
         url: data.html_url,
+        parent: parentCommit === null || parentCommit === void 0 ? void 0 : parentCommit.sha,
     };
 }
 async function getCommit(githubToken) {

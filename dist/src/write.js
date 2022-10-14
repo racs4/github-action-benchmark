@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeBenchmark = exports.SCRIPT_PREFIX = void 0;
+exports.writeBenchmark = exports.getLastCommit = exports.SCRIPT_PREFIX = void 0;
 const fs_1 = require("fs");
 const path = __importStar(require("path"));
 const io = __importStar(require("@actions/io"));
@@ -282,26 +282,36 @@ function addBenchmarkToDataJson(benchName, bench, data, maxItems) {
     data.repoUrl = htmlUrl;
     // Add benchmark result
     if (data.entries[benchName] === undefined) {
-        data.entries[benchName] = [bench];
+        data.entries[benchName] = { [bench.commit.id]: bench };
         core.debug(`No suite was found for benchmark '${benchName}' in existing data. Created`);
     }
     else {
         const suites = data.entries[benchName];
+        suites[bench.commit.id] = bench;
         // Get last suite which has different commit ID for alert comment
-        for (const e of suites.slice().reverse()) {
-            if (e.commit.id !== bench.commit.id) {
-                prevBench = e;
-                break;
-            }
+        const parent = suites[bench.commit.id].commit.parent;
+        if (parent) {
+            prevBench = suites[parent] || null;
         }
-        suites.push(bench);
-        if (maxItems !== null && suites.length > maxItems) {
-            suites.splice(0, suites.length - maxItems);
+        if (maxItems !== null && Object.keys(suites).length > maxItems) {
+            const lastCommit = getLastCommit(bench.commit.id, suites);
+            delete suites[lastCommit];
             core.debug(`Number of data items for '${benchName}' was truncated to ${maxItems} due to max-items-in-charts`);
         }
     }
     return prevBench;
 }
+function getLastCommit(actualCommitSha, suites) {
+    var _a, _b, _c;
+    let last = actualCommitSha;
+    let parent = (_a = suites[last]) === null || _a === void 0 ? void 0 : _a.commit.parent;
+    while (parent) {
+        last = (_b = suites[parent]) === null || _b === void 0 ? void 0 : _b.commit.id;
+        parent = (_c = suites[parent]) === null || _c === void 0 ? void 0 : _c.commit.parent;
+    }
+    return last;
+}
+exports.getLastCommit = getLastCommit;
 function isRemoteRejectedError(err) {
     if (err instanceof Error) {
         return ['[remote rejected]', '[rejected]'].some((l) => err.message.includes(l));
