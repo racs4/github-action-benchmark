@@ -255,7 +255,7 @@ async function getCommitFromGitHubAPIRequest(githubToken: string): Promise<Commi
 
 async function getCommit(githubToken?: string): Promise<Commit> {
     if (github.context.payload.head_commit) {
-        return github.context.payload.head_commit;
+        return { ...github.context.payload.head_commit, parent: github.context.payload.before };
     }
 
     console.log('Github context: ', github.context);
