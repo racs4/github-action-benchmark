@@ -540,6 +540,7 @@ describe('extractResult()', function () {
                 },
                 message: 'test message',
             },
+            parents: [{ sha: 'efgh6789' }],
             sha: 'abcd1234',
             html_url: 'https://github.com/dymmy/repo/commit/abcd1234',
         };
@@ -567,6 +568,7 @@ describe('extractResult()', function () {
                 username: 'testCommitterLogin',
                 email: 'committer@testdummy.com',
             },
+            parent: 'efgh6789',
         };
         A.deepEqual(commit, expectedCommit);
     });

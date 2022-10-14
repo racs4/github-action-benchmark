@@ -8,7 +8,7 @@ import { Benchmark, BenchmarkResult } from './extract';
 import { Config, ToolType } from './config';
 import { DEFAULT_INDEX_HTML } from './default_index_html';
 
-export type BenchmarkSuites = { [name: string]: Benchmark[] };
+export type BenchmarkSuites = { [name: string]: { [commit_sha: string]: Benchmark } };
 export interface DataJson {
     lastUpdate: number;
     repoUrl: string;
@@ -332,22 +332,21 @@ function addBenchmarkToDataJson(
 
     // Add benchmark result
     if (data.entries[benchName] === undefined) {
-        data.entries[benchName] = [bench];
+        data.entries[benchName] = { [bench.commit.id]: bench };
         core.debug(`No suite was found for benchmark '${benchName}' in existing data. Created`);
     } else {
         const suites = data.entries[benchName];
+        suites[bench.commit.id] = bench;
         // Get last suite which has different commit ID for alert comment
-        for (const e of suites.slice().reverse()) {
-            if (e.commit.id !== bench.commit.id) {
-                prevBench = e;
-                break;
-            }
+        const parent = suites[bench.commit.id].commit.parent;
+
+        if (parent) {
+            prevBench = suites[parent] || null;
         }
 
-        suites.push(bench);
-
-        if (maxItems !== null && suites.length > maxItems) {
-            suites.splice(0, suites.length - maxItems);
+        if (maxItems !== null && Object.keys(suites).length > maxItems) {
+            const lastCommit = getLastCommit(bench.commit.id, suites);
+            delete suites[lastCommit];
             core.debug(
                 `Number of data items for '${benchName}' was truncated to ${maxItems} due to max-items-in-charts`,
             );
@@ -355,6 +354,21 @@ function addBenchmarkToDataJson(
     }
 
     return prevBench;
+}
+
+export function getLastCommit(
+    actualCommitSha: string,
+    suites: {
+        [commit_sha: string]: Benchmark;
+    },
+): string {
+    let last = actualCommitSha;
+    let parent = suites[last]?.commit.parent;
+    while (parent) {
+        last = suites[parent]?.commit.id;
+        parent = suites[parent]?.commit.parent;
+    }
+    return last;
 }
 
 function isRemoteRejectedError(err: unknown) {

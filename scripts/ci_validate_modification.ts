@@ -1,7 +1,7 @@
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as cp from 'child_process';
-import { BenchmarkSuites, DataJson, SCRIPT_PREFIX } from '../src/write';
+import { BenchmarkSuites, DataJson, getLastCommit, SCRIPT_PREFIX } from '../src/write';
 import { VALID_TOOLS } from '../src/config';
 import { Benchmark } from '../src/extract';
 import { diff, Diff, DiffArray, DiffEdit, DiffNew } from 'deep-diff';
@@ -48,7 +48,8 @@ function validateDataJson(data: DataJson) {
     }
 
     for (const benchName of Object.keys(suites)) {
-        for (const suite of suites[benchName]) {
+        for (const key in suites[benchName]) {
+            const suite = suites[benchName][key];
             const { commit, tool, date, benches } = suite;
             if (!(VALID_TOOLS as ReadonlyArray<string>).includes(tool)) {
                 throw new Error(`Invalid tool ${tool}`);
@@ -135,7 +136,7 @@ function validateBenchmarkResultMod<T>(diff: Diff<T>, expectedBenchName: string,
     }
 
     const benchSuites = afterSuites[expectedBenchName];
-    if (benchSuites.length === 0) {
+    if (Object.keys(benchSuites).length === 0) {
         throw new Error('Benchmark suite is empty after action');
     }
 
@@ -155,14 +156,15 @@ function validateBenchmarkResultMod<T>(diff: Diff<T>, expectedBenchName: string,
     assertDiffNewBench(diff);
 
     const added: Benchmark = diff.rhs;
-    const last = benchSuites[benchSuites.length - 1];
-    if (last.commit.id !== added.commit.id) {
+    const last = getLastCommit(added.commit.id, benchSuites);
+    if (last !== added.commit.id) {
         throw new Error(
             `Newly added benchmark ${JSON.stringify(added)} is not the last one in data.js ${JSON.stringify(last)}`,
         );
     }
 
-    for (const suite of benchSuites) {
+    for (const commit in benchSuites) {
+        const suite = benchSuites[commit];
         if (suite.date > added.date) {
             throw new Error(`Older suite's date ${JSON.stringify(suite)} is newer than added ${JSON.stringify(added)}`);
         }

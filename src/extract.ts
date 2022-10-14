@@ -26,6 +26,7 @@ interface Commit {
     timestamp: string;
     tree_id?: unknown; // Unused
     url: string;
+    parent?: string;
 }
 
 interface PullRequest {
@@ -211,6 +212,7 @@ function getCommitFromPullRequestPayload(pr: PullRequest): Commit {
         message: pr.title,
         timestamp: pr.head.repo.updated_at,
         url: `${pr.html_url}/commits/${id}`,
+        parent: undefined,
     };
 }
 
@@ -228,6 +230,7 @@ async function getCommitFromGitHubAPIRequest(githubToken: string): Promise<Commi
     }
 
     const { commit } = data;
+    const parentCommit = data.parents[0];
 
     return {
         author: {
@@ -244,6 +247,7 @@ async function getCommitFromGitHubAPIRequest(githubToken: string): Promise<Commi
         message: commit.message,
         timestamp: commit.author.date,
         url: data.html_url,
+        parent: parentCommit?.sha,
     };
 }
 

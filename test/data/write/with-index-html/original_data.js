@@ -2,8 +2,8 @@ window.BENCHMARK_DATA = {
     "lastUpdate": 1574927128603,
     "repoUrl": "https://github.com/user/repo",
     "entries": {
-        "Test benchmark": [
-            {
+        "Test benchmark": {
+            "prev commit id": {
                 "commit": {
                     "author": { "email": "dummy@example.com", "name": "User", "username": "user" },
                     "committer": { "email": "dummy@example.com", "name": "User", "username": "user" },
@@ -16,8 +16,8 @@ window.BENCHMARK_DATA = {
                 },
                 "date": 1574927127603,
                 "tool": "cargo",
-                "benches": [{ "name": "bench_fib_10", "range": "+/- 20", "unit": "ns/iter", "value": 100 }]
+                "benches": [{ "name": "bench_fib_10", "range": "± 20", "unit": "ns/iter", "value": 100 }]
             }
-        ]
+        }
     }
 }
