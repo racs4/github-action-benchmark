@@ -65,8 +65,9 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
     if (!(status === 200 || status === 304)) {
         throw new Error(`Could not fetch the head commit. Received code: ${status}`);
     }
+    console.log('data commit', data);
     const { commit } = data;
-    const parentCommit = data.parents[0];
+    const parentCommit = data.parents[data.parents.length - 1];
     return {
         author: {
             name: commit.author.name,
@@ -89,6 +90,7 @@ async function getCommit(githubToken) {
     if (github.context.payload.head_commit) {
         return github.context.payload.head_commit;
     }
+    console.log('Github context: ', github.context);
     const pr = github.context.payload.pull_request;
     if (pr) {
         return getCommitFromPullRequestPayload(pr);
