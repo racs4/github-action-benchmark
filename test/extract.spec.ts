@@ -12,6 +12,7 @@ const dummyWebhookPayload = {
         timestamp: 'dummy timestamp',
         url: 'https://github.com/dummy/repo',
     },
+    before: '987654321',
 } as { [key: string]: any };
 let dummyCommitData = {};
 class DummyGitHub {
@@ -429,7 +430,7 @@ describe('extractResult()', function () {
             } as Config;
             const bench = await extractResult(config);
 
-            A.equal(bench.commit, dummyWebhookPayload.head_commit);
+            A.deepEqual(bench.commit, { ...dummyWebhookPayload.head_commit, parent: dummyWebhookPayload.before });
             A.ok(bench.date <= Date.now(), bench.date.toString());
             A.equal(bench.tool, test.tool);
             A.deepEqual(test.expected, bench.benches);
