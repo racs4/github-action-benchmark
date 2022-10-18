@@ -281,6 +281,10 @@ function addBenchmarkToDataJson(benchName, bench, data, maxItems) {
     let prevBench = null;
     data.lastUpdate = Date.now();
     data.repoUrl = htmlUrl;
+    // just a fallback to DataJson's already initialized without this property
+    if (data.branches === undefined) {
+        data.branches = {};
+    }
     if (bench.commit.original_ref) {
         console.log('Branch:', bench.commit.original_ref);
         data.branches[bench.commit.original_ref] = bench.commit.id;
