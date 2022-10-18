@@ -94,9 +94,10 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
 }
 async function getCommit(githubToken) {
     if (github.context.payload.head_commit) {
+        const ref = github.context.payload.ref.split('/');
         return {
             ...github.context.payload.head_commit,
-            original_ref: github.context.payload.ref,
+            original_ref: ref[ref.length - 1],
             parent: github.context.payload.before,
         };
     }

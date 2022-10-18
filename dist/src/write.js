@@ -282,6 +282,7 @@ function addBenchmarkToDataJson(benchName, bench, data, maxItems) {
     data.lastUpdate = Date.now();
     data.repoUrl = htmlUrl;
     if (bench.commit.original_ref) {
+        console.log('Branch:', bench.commit.original_ref);
         data.branches[bench.commit.original_ref] = bench.commit.id;
     }
     // Add benchmark result
