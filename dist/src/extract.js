@@ -94,7 +94,11 @@ async function getCommitFromGitHubAPIRequest(githubToken) {
 }
 async function getCommit(githubToken) {
     if (github.context.payload.head_commit) {
-        return { ...github.context.payload.head_commit, parent: github.context.payload.before };
+        return {
+            ...github.context.payload.head_commit,
+            original_ref: github.context.payload.ref,
+            parent: github.context.payload.before,
+        };
     }
     console.log('Github context: ', github.context);
     const pr = github.context.payload.pull_request;
